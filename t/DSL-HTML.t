@@ -97,13 +97,13 @@ describe exports {
             nested body
         </div>
         <div class="a c e" id="bar" style="display: none;" />
-        <div foo="bar" id="go_away" />
+        <div foo="bar" />
         simple text
         <div>
             test
         </div>
         <div class="a c e" id="bar" style="display: none;" />
-        <div foo="bar" id="go_away" />
+        <div foo="bar" />
         simple text
         <div>
             nested body

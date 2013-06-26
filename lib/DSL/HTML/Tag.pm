@@ -93,6 +93,7 @@ sub attr {
     my $new_attrs;
     if ( @_ == 1 && ref $_[0] ) {
         $new_attrs = shift;
+        $self->{attributes} = {};
     }
     else {
         $new_attrs = {@_};

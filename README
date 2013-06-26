@@ -2,6 +2,12 @@ NAME
     DSL::HTML - Declarative DSL(domain specific language) for writing HTML
     templates within perl.
 
+EARLY VERSION WARNING
+    THIS IS AN EARLY VERSION! Basically I have not decided 100% that the API
+    will remain as-is (though it likely will not change much). I am also
+    embarrased to admit that this code is very poorly tested (Yes, this is
+    more embarrasing considering I wrote Fennec).
+
 SYNOPSYS
   TEMPLATE PACKAGE
         package My::Templates;

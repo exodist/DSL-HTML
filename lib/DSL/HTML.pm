@@ -221,6 +221,13 @@ __END__
 DSL::HTML - Declarative DSL(domain specific language) for writing HTML
 templates within perl.
 
+=head1 EARLY VERSION WARNING
+
+B<THIS IS AN EARLY VERSION!> Basically I have not decided 100% that the API
+will remain as-is (though it likely will not change much). I am also embarrased
+to admit that this code is very poorly tested (Yes, this is more embarrasing
+considering I wrote L<Fennec>).
+
 =head1 SYNOPSYS
 
 =head2 TEMPLATE PACKAGE
