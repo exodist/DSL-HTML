@@ -454,6 +454,8 @@ An L<DSL::HTML::Template> object is created.
 
 =item tag NAME { ... }
 
+=item tag NAME { "simple text" }
+
 Define a tag. Never returns anything. All attributes are optional, any may be
 specified. The 'class' attribute is handled specially so that classes can be
 dynamically added and removed using C<add_class()> and C<remove_class()>.
@@ -461,6 +463,10 @@ dynamically added and removed using C<add_class()> and C<remove_class()>.
 Calls to tag must be made within a template, they will not work anywhere else
 (though because of the stack you may call tag() within a function or method
 that you call within a template).
+
+If the codeblock does not add any text or tag elements to the tag, and you
+return a simple string from the codelbock, the string will be added as a text
+element. This allows for shortcutting tags that only contain basic text.
 
 B<Note:> the 'head' and 'body' tags have special handling. Every time you call
 C<tag head {...}> within a template you get the same tag object. The same
