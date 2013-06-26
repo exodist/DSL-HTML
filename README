@@ -1,0 +1,315 @@
+NAME
+    DSL::HTML - Declarative DSL(domain specific language) for writing HTML
+    templates within perl.
+
+SYNOPSYS
+  TEMPLATE PACKAGE
+        package My::Templates;
+        use strict;
+        use warnings;
+
+        use DSL::HTML;
+
+        use base 'Exporter'; # You can export your templates
+
+        our @EXPORT = qw/ulist list_pair/;
+
+        template ulist {
+            # $self is auto-shifted for you and is an instance of
+            # DSL::HTML::Rendering.
+            my @items = @_;
+
+            css 'ulist.css';
+
+            tag ul(class => 'my_ulist') {
+                for my $item (@items) {
+                    tag li { $item }
+                }
+            }
+        }
+
+        template list_pair {
+            my ($items_a, $items_b) = @_;
+            include ulist => @$items_a; # Using the ulist template above
+            include ulist => @$items_b; # " "
+        }
+
+        1;
+
+    Now to use it:
+
+        # This will import the 'build_template' function, as well as all the
+        # templates defined by the package. You can request only specific templates
+        # by passing them as arguments to the use statement.
+        use My::Templates;
+
+        my $html = build_template list_pair => (
+            [qw/red green blue/],
+            [qw/one two three/],
+        );
+
+        print $html;
+
+    Should give us:
+
+        <html>
+            <head>
+                <link type="text/css" rel="stylesheet" href="ulist.css" />
+            </head>
+
+            <body>
+                <ul class="my_ulist">
+                    <li>
+                        red
+                    </li>
+                    <li>
+                        green
+                    </li>
+                    <li>
+                        blue
+                    </li>
+                </ul>
+                <ul class="my_ulist">
+                    <li>
+                        one
+                    </li>
+                    <li>
+                        two
+                    </li>
+                    <li>
+                        three
+                    </li>
+                </ul>
+            </body>
+        </html>
+
+  TEMPLATE OBJECT
+    If you do not like defining templates as package meta-data you can use
+    them in a less-meta form:
+
+    Note: You could also skip the fancy syntax
+
+        use strict;
+        use warnings;
+
+        use DSL::HTML;
+
+        my $ulist = template ulist {
+            # $self is auto-shifted for you and is an instance of
+            # DSL::HTML::Rendering.
+            my @items = @_;
+
+            css 'ulist.css';
+
+            tag ul(class => 'my_ulist') {
+                for my $item (@items) {
+                    tag li { $item }
+                }
+            }
+        }
+
+        my $list_pair = template list_pair {
+            my ($items_a, $items_b) = @_;
+            $ulist->include( @$items_a ); # Using the ulist template above
+            $ulist->include( @$items_b ); # " "
+
+            # Alternatively you could do:
+            # include $ulist => ...;
+            # the 'include' keyword works with at emplate object as an argument
+        }
+
+        my $html = $list_pair->compile(
+            [qw/red green blue/],
+            [qw/one two three/],
+        );
+
+        # You could also do:
+        # build_template $list_pair => (...);
+
+        print $html;
+
+    Should give us:
+
+        <html>
+            <head>
+                <link type="text/css" rel="stylesheet" href="ulist.css" />
+            </head>
+
+            <body>
+                <ul class="my_ulist">
+                    <li>
+                        red
+                    </li>
+                    <li>
+                        green
+                    </li>
+                    <li>
+                        blue
+                    </li>
+                </ul>
+                <ul class="my_ulist">
+                    <li>
+                        one
+                    </li>
+                    <li>
+                        two
+                    </li>
+                    <li>
+                        three
+                    </li>
+                </ul>
+            </body>
+        </html>
+
+GUTS
+    This package works via a template stack system. When you build a
+    template a rendering object is pushed onto a stack, the codeblock you
+    provided is then executed. Any tags defined at this point get added to
+    the rendering object at the top of the stack.
+
+    When a tag is defined it is pushed to the top of the stack, then the
+    codelbock for it is run. In this way you can create a nested HTML
+    structure. After all the nested codeblocks are executed, the html
+    content is built from the tree.
+
+    Because of this stack system you can also write helper objects or
+    functions which themselves call tag, or any other export provided by
+    this package, so long as those helpers are called (no matter how
+    indirectly) from within a template codeblock you are fine.
+
+EXPORTS
+    import()
+        When you "use" DSL::HTML it will inject a method called "import"
+        into your package. This is done so that anyone that loads your
+        package via "use" will gain all your templates, as well as the
+        "build_template" function.
+
+        Note: This will cause a conflict if you use it in any module that
+        uses Exporter, Exporter::Declare, or similar exporter modules. To
+        prevent this you can tell DSL::HTML not to inject "import()" at use
+        time, either by rejecting it specifically, or by specifying with
+        functions you do want:
+
+        Outright rejection:
+
+            use DSL::HTML '-default', '!import';
+
+        Just what you want:
+
+            use DSL::HTML qw/template tag css js build_template get_template/;
+
+        If you do either of these then loading your template package will
+        NOT make your templates available to the package loading it, but you
+        can get them via:
+
+            use Your::Package;
+            my $tmp = Your::Package->get_template('the_template');
+            my $html = $tmp->build( ... );
+
+    template NAME(%PARAMS) { ... }
+    template NAME { ... }
+    $t = template NAME(%PARAMS) { ... }
+    $t = template NAME { ... }
+        Define a template. If the return value is ignored the template will
+        be inserted into the current package metadata. If you capture the
+        return value then nothing is stored in the meta-data.
+
+        Parameters are optional, currently the only used parameter is
+        'indent' which can be set to "\t" or a number of spaces.
+
+        An DSL::HTML::Template object is created.
+
+    tag NAME(%ATTRIBUTES) { ... }
+    tag NAME { ... }
+        Define a tag. Never returns anything. All attributes are optional,
+        any may be specified. The 'class' attribute is handled specially so
+        that classes can be dynamically added and removed using
+        "add_class()" and "remove_class()".
+
+        Calls to tag must be made within a template, they will not work
+        anywhere else (though because of the stack you may call tag() within
+        a function or method that you call within a template).
+
+        Note: the 'head' and 'body' tags have special handling. Every time
+        you call "tag head {...}" within a template you get the same tag
+        object. The same behavior applies to the body tag.
+
+        You can and should nest calls to tag, this allows you to create a
+        tag tree.
+
+            template foo {
+                tag parent {
+                    tag child {
+                        ...
+                    }
+                }
+            }
+
+        Under the hood an DSL::HTML::Tag is created.
+
+    text "...";
+        Define a text element in the current template/tag.
+
+        Under the hood an DSL::HTML::Text is created.
+
+    css "path/to/file.css";
+        Append a css file to the header. This can be called multiple times,
+        each path will only be included once.
+
+    js "path/to/file.js";
+        Append a js file to the header. This can be called multiple times,
+        each path will only be included once.
+
+    attr name => 'val', ...;
+        Set specific attributes in the current tag.
+
+    attr { name => 'val' };
+        Reset all attributes in the current tag to those provided in the
+        hashref.
+
+    add_class 'name';
+        Add a class to the current tag.
+
+    del_class 'name';
+        Remove a class from the current tag.
+
+    $html = build_template $TEMPLATE => @ARGS
+    $html = build_template $TEMPLATE, @ARGS
+    $html = build_template $TEMPLATE
+        Build html from a template given specific arguments (optional).
+        Template may be a template name which will can be found in the
+        current package meta-data, or it can be an DSL::HTML::Template
+        object.
+
+    include $TEMPLATE => @ARGS
+    include $TEMPLATE, @ARGS
+    include $TEMPLATE
+        Nest the result of building another template within the current one.
+
+    $tmp = get_template($name)
+    $tmp = PACKAGE->get_template($name)
+    $tmp = $INSTANCE->get_template($name)
+        Get a template. When used as a function it will find the template in
+        the current package meta-data. When called as a method on a class or
+        instance it will find the template in the metadata for that package.
+
+WHOAH! NICE SYNTAX
+    The syntax is provided via Exporter::Declare which uses Devel::Declare.
+
+SEE ALSO
+    HTML::Declare
+        HTML::Declare seems to be a similar idea, however I dislike the
+        syntax and some other oddities.
+
+AUTHORS
+    Chad Granum exodist7@gmail.com
+
+COPYRIGHT
+    Copyright (C) 2013 Chad Granum
+
+    DSL-HTML is free software; Standard perl license (GPL and Artistic).
+
+    DSL-HTML is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE. See the license for more details.
+
