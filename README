@@ -16,10 +16,6 @@ SYNOPSYS
 
         use DSL::HTML;
 
-        use base 'Exporter'; # You can export your templates
-
-        our @EXPORT = qw/ulist list_pair/;
-
         template ulist {
             # $self is auto-shifted for you and is an instance of
             # DSL::HTML::Rendering.

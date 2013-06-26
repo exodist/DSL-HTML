@@ -20,7 +20,7 @@ use DSL::HTML::Rendering;
 use DSL::HTML::Tag;
 use DSL::HTML::Text;
 
-our $VERSION = '0.001';
+our $VERSION = '0.002';
 
 sub after_import {
     my $class = shift;
@@ -237,10 +237,6 @@ considering I wrote L<Fennec>).
     use warnings;
 
     use DSL::HTML;
-
-    use base 'Exporter'; # You can export your templates
-
-    our @EXPORT = qw/ulist list_pair/;
 
     template ulist {
         # $self is auto-shifted for you and is an instance of
