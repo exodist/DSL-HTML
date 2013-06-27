@@ -57,13 +57,15 @@ default_export import {
             carp "'$template' already defined in class '$caller', not replacing";
             next;
         }
-        $imeta->{$template} = $meta->{$template};
+
+        $imeta->{$template} = $meta->{$template}
+            || carp "'$template' is not defined by '$class'";
     }
 
-    {
-        no strict 'refs';
-        *{"$caller\::build_template"} = \&build_template;
-    }
+    return 1 if $caller->can( 'build_template' );
+
+    no strict 'refs';
+    *{"$caller\::build_template"} = \&build_template;
 
     return 1;
 }
@@ -267,18 +269,6 @@ will remain as-is (though it likely will not change much). I am also embarrased
 to admit that this code is very poorly tested (Yes, this is more embarrasing
 considering I wrote L<Fennec>).
 
-=head2 TODO
-
-=over 4
-
-=item Useful Template Library
-
-ul, dl, table, etc.
-
-=item doctype
-
-=back
-
 =head2 BENEFITS
 
 =over 4
@@ -383,6 +373,10 @@ template codeblock you are fine.
 
 L<DSL::HTML::Compiler> can be used to convert existing HTML into DSL::HTML
 templates.
+
+=head1 STANDARD TEMPLATE LIBRARY
+
+L<DSL::HTML::STL> is a library of templates available to use.
 
 =head1 EXPORTS
 
