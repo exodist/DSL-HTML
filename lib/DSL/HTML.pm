@@ -252,7 +252,7 @@ In most cases a templating system lets you write html files with embedded
 logic. The embedded logic can be a template specific language, or it can let
 you embed code from the projects programming language.
 
-An alternative that has been played with is constructing the HTMl directly in
+An alternative that has been played with is constructing the HTML directly in
 your application language. In most cases this B<sucks more>. OOP, where objects
 are built and then associated via method calls is B<NOT> a friendly way to
 build a complex tree.
@@ -479,7 +479,7 @@ will only be included once.
 
 =item js "path/to/file.js";
 
-Append a js file to the header. This can be called multiple times, each path
+Append a js file to the end of the <html> tag. This can be called multiple times, each path
 will only be included once.
 
 =item attr name => 'val', ...;
