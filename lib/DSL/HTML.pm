@@ -18,7 +18,7 @@ use DSL::HTML::Template;
 use DSL::HTML::Rendering;
 use HTML::Element;
 
-our $VERSION = '0.003';
+our $VERSION = '0.004';
 
 sub after_import {
     my $class = shift;
@@ -262,7 +262,7 @@ elegent way. Instead of forcing you to construct objects and build a tree
 manually via methods, you define the tree via nested subroutines. This is sort
 of a functional approach to tree building.
 
-=head1 EARLY VERSION WARNING
+=head2 EARLY VERSION WARNING
 
 B<THIS IS AN EARLY VERSION!> Basically I have not decided 100% that the API
 will remain as-is (though it likely will not change much). I am also embarrased
