@@ -13,8 +13,9 @@ my $build = Module::Build->new(
         'Carp'         => 0,
         'Scalar::Util' => 0,
 
+        'HTML::Tree' => '5.00',
+
         'Devel::Declare::Parser'         => '0.017',
-        'Devel::Declare::Parser::Fennec' => '0.005',
         'Exporter::Declare'              => '0.113',
         'Exporter::Declare::Magic'       => '0.107',
     },

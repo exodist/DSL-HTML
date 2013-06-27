@@ -1,8 +1,36 @@
 use strict;
 use warnings;
+
+use HTML::TreeBuilder;
+
 use Fennec::Declare class => 'DSL::HTML';
 
 BEGIN { use_ok $CLASS, '-default', '!import' }
+
+my $WANT = <<EOT;
+<html>
+    <head>
+        <title>foo</title>
+        <meta foo="bar" />
+        <link href="a.css" rel="stylesheet" type="text/css" />
+        <link href="b.css" rel="stylesheet" type="text/css" />
+    </head>
+    <body>
+        <div>test</div>
+        <div>nested body</div>
+        <div class="a c e" id="bar" style="display: none;">
+        </div>
+        <div foo="bar" id="go_away">
+        </div>simple text<div>test</div>
+        <div>nested body</div>
+        <div class="a c e" id="bar" style="display: none;">
+        </div>
+        <div foo="bar" id="go_away">
+        </div>simple text</body>
+    <script src="a.js"></script>
+    <script src="b.js"></script>
+</html>
+EOT
 
 describe exports {
     return unless $self->can_ok( qw{
@@ -20,7 +48,8 @@ describe exports {
     });
 
     template test {
-        isa_ok( $self, 'DSL::HTML::Rendering' );
+        isa_ok( $tag, 'HTML::Element' );
+        like( $tag->tag, qr/^(body|TEMP)$/i, "In the root tag" );
         my $count = shift;
 
         tag div { 'test' }
@@ -30,6 +59,7 @@ describe exports {
 
         if ( $count ) {
             tag head {
+                is( $tag->tag, 'head', "Got head tag" );
                 tag title { 'foo' }
             }
         }
@@ -37,12 +67,13 @@ describe exports {
         # Ensure that there is only ever 1 head tag
         unless ( $count ) {
             tag head {
-                tag meta { 'bar' }
+                tag meta(foo => 'bar') {}
             }
         }
 
         # Not necessary, body is already top of the stack
         tag body {
+            is( $tag->tag, 'body', "Got body tag" );
             tag div { 'nested body' }
 
             # Despite the nesting these still go to the head
@@ -52,6 +83,7 @@ describe exports {
         }
 
         tag div(id => 'bar', class => 'a b c' ) {
+            is( $tag->tag, 'div', "Inside div" );
             add_class 'e';
             del_class 'b';
             attr style => 'display: none;';
@@ -74,45 +106,16 @@ describe exports {
 
     tests template {
         my $html = build_template test => 1;
-        is( $html, <<'        EOT', "Got expected html" );
-<html>
-    <head>
-        <title>
-            foo
-        </title>
-        <meta>
-            bar
-        </meta>
-        <link href="a.css" rel="stylesheet" type="text/css" />
-        <link href="b.css" rel="stylesheet" type="text/css" />
-    </head>
+        my $got_tree  = HTML::TreeBuilder->new;
+        my $want_tree = HTML::TreeBuilder->new;
 
-    <body>
-        <div>
-            test
-        </div>
-        <div>
-            nested body
-        </div>
-        <div class="a c e" id="bar" style="display: none;" />
-        <div foo="bar" />
-        simple text
-        <div>
-            test
-        </div>
-        <div class="a c e" id="bar" style="display: none;" />
-        <div foo="bar" />
-        simple text
-        <div>
-            nested body
-        </div>
-    </body>
+        $got_tree->parse_content($html);
+        $want_tree->parse_content($WANT);
 
-    <script src="a.js"></script>
-    <script src="b.js"></script>
+        $got_tree->elementify;
+        $want_tree->elementify;
 
-</html>
-        EOT
+        is_deeply( $got_tree, $want_tree, "Got expected html" );
     }
 }
 

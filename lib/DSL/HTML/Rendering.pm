@@ -2,14 +2,17 @@ package DSL::HTML::Rendering;
 use strict;
 use warnings;
 
-use DSL::HTML::Tag;
+use HTML::Element;
 
-use Carp qw/croak/;
-our @CARP_NOT = qw/DSL::HTML DSL::HTML::Template DSL::HTML::Tag/;
+use Scalar::Util qw/blessed/;
+
+use Carp qw/croak confess/;
+our @CARP_NOT = qw/DSL::HTML DSL::HTML::Template/;
 
 sub template  { shift->{template}  }
 sub head      { shift->{head}      }
 sub body      { shift->{body}      }
+sub root      { shift->{root}      }
 sub tag_stack { shift->{tag_stack} }
 sub css_seen  { shift->{css_seen}  }
 sub js_seen   { shift->{js_seen}   }
@@ -25,14 +28,16 @@ sub new {
     my $class = shift;
     my ( $template ) = @_;
 
-    my $body = DSL::HTML::Tag->new(body => {});
-    my $head = DSL::HTML::Tag->new(head => {});
+    my $html = HTML::Element->new('html');
+    my $body = HTML::Element->new('body');
+    my $head = HTML::Element->new('head');
 
     return bless {
         template  => $template,
-        tag_stack => [$body],
+        tag_stack => [$html, $body],
         head      => $head,
         body      => $body,
+        root      => $html,
         css_ref   => [],
         js_ref    => [],
         css_seen  => {},
@@ -57,22 +62,14 @@ sub compile {
 
 sub include {
     my $self = shift;
-    my (@args) = @_;
+    my ($tmp, @args) = @_;
 
-    my $current = current();
-    croak "Cannot include template, no parent template"
-        unless $current;
+    my $sub_render = bless {
+        %$self,
+        template => $tmp,
+    }, blessed($self);
 
-    $self->push_tag(DSL::HTML::Tag->new(root => {}));
-    $self->build(@args);
-
-    # This will be root tag
-    $current->insert( $self->peek_tag->element_list );
-
-    $current->add_css( $self->css_list );
-    $current->add_js( $self->js_list );
-    $current->head->insert( $self->head->element_list );
-    $current->body->insert( $self->body->element_list );
+    $sub_render->build(@args);
 
     return;
 }
@@ -85,7 +82,7 @@ sub build {
 
     push @STACK => $self;
     my $success = eval {
-        $self->template->block->($self, @args);
+        $self->template->block->($self->peek_tag, @args);
         1;
     };
     my $error = $@;
@@ -95,47 +92,34 @@ sub build {
 
 sub as_html {
     my $self = shift;
-    my $head = $self->build_head;
-    chomp(my $body = $self->body->as_html(1, $self->template->indent));
 
-    my $js_tags = "";
-    for my $js ($self->js_list) {
-        $js_tags .= DSL::HTML::Tag->new(
-            script => { src => $js },
-        )->as_html(1, $self->template->indent);
-    }
-
-    return <<"    EOT";
-<html>
-$head
-$body
-
-$js_tags
-</html>
-    EOT
-}
-
-sub build_head {
-    my $self = shift;
-    my $head = $self->head->_clone;
+    my $head = $self->head;
+    my $body = $self->body;
+    my $html = $self->root;
 
     for my $css ($self->css_list) {
-        my $tag = DSL::HTML::Tag->new(
-            link => {
+        my $tag = HTML::Element->new(
+            link => (
                 rel  => 'stylesheet',
                 type => 'text/css',
                 href => $css,
-            }
+            )
         );
-        $head->insert($tag);
+        $head->push_content($tag);
     }
 
-    return $head->as_html(1, $self->template->indent);
+    $html->push_content(
+        $head,
+        $body,
+        map {  HTML::Element->new( script => ( src => $_ )) } $self->js_list,
+    );
+
+    return $html->as_HTML(undef, $self->template->indent);
 }
 
 sub insert {
     my $self = shift;
-    $self->peek_tag->insert(@_);
+    $self->peek_tag->push_content(@_);
 }
 
 sub push_tag {
@@ -146,7 +130,10 @@ sub push_tag {
 
 sub pop_tag {
     my $self = shift;
-    pop @{$self->tag_stack};
+    my ($want) = @_;
+    my $got = pop @{$self->tag_stack};
+    confess "Corrupt stack detected! popped the wrong tag!"
+        unless $got == $want;
 }
 
 sub peek_tag {
@@ -190,7 +177,7 @@ __END__
 
 =head1 NAME
 
-DSL::HTML:: - Used internally by L<DSL::HTML>
+DSL::HTML::Rendering - Used internally by L<DSL::HTML>
 
 =head1 NOTES
 

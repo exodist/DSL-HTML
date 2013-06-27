@@ -17,19 +17,13 @@ sub new {
     my $class = shift;
     my ($name, $params, $block) = @_;
 
-    if( $params && $params->{indent} ) {
-        my $indent = $params->{indent};
-        croak "indent must be a tab, or a number of spaces"
-            unless $indent =~ m/^(\t|\d+)$/;
-    }
-
     $params ||= {};
-    $params->{indent} //= 4;
+    $params->{indent} //= "    ";
 
     return bless {
-        name      => $name,
-        params    => $params,
-        block     => $block,
+        name   => $name,
+        params => $params,
+        block  => $block,
     }, $class;
 }
 
@@ -51,7 +45,7 @@ __END__
 
 =head1 NAME
 
-DSL::HTML:: - Used internally by L<DSL::HTML>
+DSL::HTML::Template - Used internally by L<DSL::HTML>
 
 =head1 NOTES
 

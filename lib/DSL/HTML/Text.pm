@@ -2,19 +2,8 @@ package DSL::HTML::Text;
 use strict;
 use warnings;
 
-sub new {
-    my $class = shift;
-    my @value = @_;
-
-    return bless \@value, $class;
-}
-
-sub as_html {
-    my $self = shift;
-    my ( $level, $indent ) = @_;
-    my $lead = ($indent eq "\t" ? "\t" : ' ' x $indent ) x $level;
-    return join "" => map { "${lead}$_\n" } @$self;
-}
+use Carp qw/croak/;
+croak "deprecated";
 
 1;
 
@@ -24,19 +13,9 @@ __END__
 
 DSL::HTML::Text - Used internally by L<DSL::HTML>
 
-=head1 NOTES
+=head1 DEPRECATED
 
-You should never need to construct this yourself.
-
-=head1 METHODS
-
-=over 4
-
-=item as_html
-
-Returns the content of this text element.
-
-=back
+This module is deprecated.
 
 =head1 AUTHORS
 

@@ -39,7 +39,7 @@ template simple {
 my $html;
 lives_ok { $html = build_template simple => ( 'foo', 'bar' ) } "Did not die";
 
-like( $html, qr/A 'bar' is had/, "Got nested text" );
+like( $html, qr/A \S+bar\S+ is had/, "Got nested text" );
 
 {
     package Test::Consumer;

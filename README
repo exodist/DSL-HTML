@@ -26,9 +26,6 @@ EARLY VERSION WARNING
     more embarrasing considering I wrote Fennec).
 
   TODO
-    Switch to HTML::Element instead of DSL::HTML::Tag
-        Duplicate code, bleh
-
     Useful Template Library
         ul, dl, table, etc.
 
@@ -165,7 +162,8 @@ EXPORTS
         return value then nothing is stored in the meta-data.
 
         Parameters are optional, currently the only used parameter is
-        'indent' which can be set to "\t" or a number of spaces.
+        'indent' which can be set to any string, but you probably want "\t"
+        or " ".
 
         An DSL::HTML::Template object is created.
 
@@ -201,7 +199,7 @@ EXPORTS
                 }
             }
 
-        Under the hood an DSL::HTML::Tag is created.
+        Under the hood an HTML::Element is created.
 
     text "...";
         Define a text element in the current template/tag.
@@ -217,11 +215,9 @@ EXPORTS
         each path will only be included once.
 
     attr name => 'val', ...;
-        Set specific attributes in the current tag.
-
     attr { name => 'val' };
-        Reset all attributes in the current tag to those provided in the
-        hashref.
+        Set specific attributes in the current tag. Arguments may be hashref
+        or key/value list.
 
     add_class 'name';
         Add a class to the current tag.
