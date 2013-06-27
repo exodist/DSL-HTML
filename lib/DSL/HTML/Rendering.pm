@@ -43,6 +43,7 @@ sub new {
 sub args {
     my $self = shift;
     $self->{args} = [@_] if @_;
+    return unless $self->{args};
     return @{$self->{args}};
 }
 
@@ -96,10 +97,20 @@ sub as_html {
     my $self = shift;
     my $head = $self->build_head;
     chomp(my $body = $self->body->as_html(1, $self->template->indent));
+
+    my $js_tags = "";
+    for my $js ($self->js_list) {
+        $js_tags .= DSL::HTML::Tag->new(
+            script => { src => $js },
+        )->as_html(1, $self->template->indent);
+    }
+
     return <<"    EOT";
 <html>
 $head
 $body
+
+$js_tags
 </html>
     EOT
 }
@@ -115,13 +126,6 @@ sub build_head {
                 type => 'text/css',
                 href => $css,
             }
-        );
-        $head->insert($tag);
-    }
-
-    for my $js ($self->js_list) {
-        my $tag = DSL::HTML::Tag->new(
-            script => { src => $js },
         );
         $head->insert($tag);
     }

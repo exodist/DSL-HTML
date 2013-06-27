@@ -85,8 +85,6 @@ describe exports {
         </meta>
         <link href="a.css" rel="stylesheet" type="text/css" />
         <link href="b.css" rel="stylesheet" type="text/css" />
-        <script src="a.js"></script>
-        <script src="b.js"></script>
     </head>
 
     <body>
@@ -109,6 +107,10 @@ describe exports {
             nested body
         </div>
     </body>
+
+    <script src="a.js"></script>
+    <script src="b.js"></script>
+
 </html>
         EOT
     }
