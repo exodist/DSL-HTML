@@ -18,13 +18,13 @@ use DSL::HTML::Template;
 use DSL::HTML::Rendering;
 use HTML::Element;
 
-our $VERSION = '0.004';
+our $VERSION = '0.005';
 
 sub after_import {
     my $class = shift;
-    my ($importer, $specs) = @_;
+    my ( $importer, $specs ) = @_;
 
-    inject_meta( $importer );
+    inject_meta($importer);
 }
 
 sub inject_meta {
@@ -47,12 +47,12 @@ default_export import {
     my $class = shift;
 
     my $caller = caller;
-    my $imeta = inject_meta( $caller );
-    my $meta = $class->DSL_HTML;
+    my $imeta  = inject_meta($caller);
+    my $meta   = $class->DSL_HTML;
 
     my @want = @_ ? @_ : keys %$meta;
 
-    for my $template ( @want ) {
+    for my $template (@want) {
         if ( $imeta->{$template} ) {
             carp "'$template' already defined in class '$caller', not replacing";
             next;
@@ -62,7 +62,7 @@ default_export import {
             || carp "'$template' is not defined by '$class'";
     }
 
-    return 1 if $caller->can( 'build_template' );
+    return 1 if $caller->can('build_template');
 
     no strict 'refs';
     *{"$caller\::build_template"} = \&build_template;
@@ -75,15 +75,15 @@ default_export template dsl_html {
     die "Template name is required" unless $name;
     my ( $params, $block );
     if ( @_ == 1 ) {
-        $block = pop @_;
+        $block  = pop @_;
         $params = {};
     }
     else {
         $params = {@_};
-        $block = delete $params->{block};
+        $block  = delete $params->{block};
     }
 
-    my $template = DSL::HTML::Template->new($name, $params, $block);
+    my $template = DSL::HTML::Template->new( $name, $params, $block );
     return $template if defined wantarray;
 
     caller->DSL_HTML->{$name} = $template;
@@ -94,12 +94,12 @@ default_export tag dsl_html {
     croak "tag name is required" unless $name;
     my ( $params, $block );
     if ( @_ == 1 ) {
-        $block = pop @_;
+        $block  = pop @_;
         $params = {};
     }
     else {
         $params = {@_};
-        $block = delete $params->{block};
+        $block  = delete $params->{block};
     }
 
     check_nesting('tag');
@@ -109,14 +109,14 @@ default_export tag dsl_html {
     if ( $name =~ m/^head$/i ) {
         $tag = $rendering->head;
     }
-    elsif( $name =~ m/^body$/i ) {
+    elsif ( $name =~ m/^body$/i ) {
         $tag = $rendering->body;
     }
-    elsif( $name =~ m/^html$/i ) {
+    elsif ( $name =~ m/^html$/i ) {
         $tag = $rendering->root;
     }
     else {
-        $tag = HTML::Element->new($name, %$params);
+        $tag = HTML::Element->new( $name, %$params );
         $rendering->insert($tag);
     }
 
@@ -143,8 +143,9 @@ default_export get_template {
 }
 
 default_export 'build_template';
+
 sub build_template {
-    my ($template, @args) = @_;
+    my ( $template, @args ) = @_;
     my $caller = caller;
 
     $template->compile(@args)
@@ -158,19 +159,20 @@ sub build_template {
 }
 
 default_export include {
-    my ($template, @args) = @_;
+    my ( $template, @args ) = @_;
     my $caller = caller;
 
     check_nesting('include');
 
-    my $tmp = blessed($template)
+    my $tmp =
+        blessed($template)
         ? $template
         : $caller->DSL_HTML->{$template};
 
     croak "No such template '$template'"
         unless $tmp;
 
-    DSL::HTML::Rendering->current->include($tmp, @args);
+    DSL::HTML::Rendering->current->include( $tmp, @args );
 
     return;
 }
@@ -178,19 +180,19 @@ default_export include {
 default_export text {
     my ($content) = @_;
     check_nesting('text');
-    DSL::HTML::Rendering->current->peek_tag->push_content( "$content" );
+    DSL::HTML::Rendering->current->peek_tag->push_content("$content");
     return;
 }
 
 default_export css {
     check_nesting('css');
-    DSL::HTML::Rendering->current->add_css( @_ );
+    DSL::HTML::Rendering->current->add_css(@_);
     return;
 }
 
 default_export js {
     check_nesting('js');
-    DSL::HTML::Rendering->current->add_js( @_ );
+    DSL::HTML::Rendering->current->add_js(@_);
     return;
 }
 
@@ -199,7 +201,7 @@ default_export attr {
     my $tag = DSL::HTML::Rendering->current->peek_tag;
     return unless @_;
     my $attrs = @_ < 2 ? shift : {@_};
-    $tag->attr($_ => $attrs->{$_}) for keys %$attrs;
+    $tag->attr( $_ => $attrs->{$_} ) for keys %$attrs;
     return;
 }
 
@@ -211,7 +213,7 @@ default_export add_class {
 
     my %seen;
     my $new = join " ", sort grep { !$seen{$_}++ } @_, split /\s+/, $existing;
-    $tag->attr(class => $new);
+    $tag->attr( class => $new );
 
     return;
 }
@@ -222,9 +224,9 @@ default_export del_class {
     my $tag = DSL::HTML::Rendering->current->peek_tag;
     my $existing = $tag->attr('class') || "";
 
-    my %seen = map {$_ => 1} @_;
+    my %seen = map { $_ => 1 } @_;
     my $new = join " ", sort grep { !$seen{$_}++ } split /\s+/, $existing;
-    $tag->attr(class => $new);
+    $tag->attr( class => $new );
 
     return;
 }

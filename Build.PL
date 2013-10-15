@@ -26,9 +26,9 @@ my $build = Module::Build->new(
     },
     meta_merge => {
         resources => {
-            repository  => 'http://github.com/exodist/Fennec',
-            bugtracker  => 'http://github.com/exodist/Fennec/issues',
-            homepage    => 'http://exodist.github.io/Fennec/'
+            repository  => 'http://github.com/exodist/DSL-HTML',
+            bugtracker  => 'http://github.com/exodist/DSL-HTML/issues',
+            homepage    => 'http://github.com/exodist/DSL-HTML'
         },
     },
 );
