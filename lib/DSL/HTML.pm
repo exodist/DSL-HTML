@@ -18,7 +18,7 @@ use DSL::HTML::Template;
 use DSL::HTML::Rendering;
 use HTML::Element;
 
-our $VERSION = '0.005';
+our $VERSION = '0.006';
 
 sub after_import {
     my $class = shift;
