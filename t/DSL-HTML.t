@@ -17,12 +17,13 @@ my $WANT = <<EOT;
     </head>
     <body>
         <div>test</div>
-        <!--comment-->
+        <b>literal</b>
         <div>nested body</div>
         <div class="a c e" id="bar" style="display: none;">
         </div>
         <div foo="bar" id="go_away">
         </div>simple text<div>test</div>
+        <b>literal</b>
         <div>nested body</div>
         <div class="a c e" id="bar" style="display: none;">
         </div>
@@ -55,7 +56,7 @@ describe exports {
 
         tag div { 'test' }
 
-        tag('~comment', text => 'comment');
+        tag('~literal', text => '<b>literal</b>');
 
         css 'a.css';
         css 'b.css';
