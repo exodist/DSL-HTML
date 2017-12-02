@@ -17,6 +17,7 @@ my $WANT = <<EOT;
     </head>
     <body>
         <div>test</div>
+        <!--comment-->
         <div>nested body</div>
         <div class="a c e" id="bar" style="display: none;">
         </div>
@@ -53,6 +54,9 @@ describe exports {
         my $count = shift;
 
         tag div { 'test' }
+
+        tag('~comment', text => 'comment');
+
         css 'a.css';
         css 'b.css';
         css 'b.css'; # duplicate
