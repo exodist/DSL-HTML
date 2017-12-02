@@ -34,6 +34,8 @@ template simple {
         tag h2 { "inner!" }
         include foo => @inner;
     }
+
+    tag('~literal', text => '<b>literal text</b>');
 }
 
 my $html;

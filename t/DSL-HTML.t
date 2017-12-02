@@ -17,11 +17,13 @@ my $WANT = <<EOT;
     </head>
     <body>
         <div>test</div>
+        <b>literal</b>
         <div>nested body</div>
         <div class="a c e" id="bar" style="display: none;">
         </div>
         <div foo="bar" id="go_away">
         </div>simple text<div>test</div>
+        <b>literal</b>
         <div>nested body</div>
         <div class="a c e" id="bar" style="display: none;">
         </div>
@@ -53,6 +55,9 @@ describe exports {
         my $count = shift;
 
         tag div { 'test' }
+
+        tag('~literal', text => '<b>literal</b>');
+
         css 'a.css';
         css 'b.css';
         css 'b.css'; # duplicate

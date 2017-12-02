@@ -120,18 +120,20 @@ default_export tag dsl_html {
         $rendering->insert($tag);
     }
 
-    $rendering->push_tag($tag);
-    my @result;
-    my $success = eval {
-        @result = $block->($tag);
-        1;
-    };
-    my $error = $@;
-    $rendering->pop_tag($tag);
-    die $error unless $success;
+    if ( $block ) {
+        $rendering->push_tag($tag);
+        my @result;
+        my $success = eval {
+            @result = $block->($tag);
+            1;
+        };
+        my $error = $@;
+        $rendering->pop_tag($tag);
+        die $error unless $success;
 
-    $tag->push_content(@result)
-        if @result && !ref $result[0] && !$tag->content_list;
+        $tag->push_content(@result)
+            if @result && !ref $result[0] && !$tag->content_list;
+    }
 
     return;
 }
